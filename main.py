@@ -38,7 +38,19 @@ def home():
 def get_video(req: LinkRequest):
     url = req.url.strip()
     platform = detect_platform(url)
-    ydl_opts = {'quiet': True, 'no_warnings': True, 'format': 'best'}
+    
+    # Using Android client bypass for cloud/datacenter IPs
+    ydl_opts = {
+        'quiet': True, 
+        'no_warnings': True, 
+        'format': 'best',
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web']
+            }
+        }
+    }
+    
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -69,7 +81,15 @@ def get_video(req: LinkRequest):
 def get_thumbnail(req: LinkRequest):
     url = req.url.strip()
     platform = detect_platform(url)
-    ydl_opts = {'quiet': True, 'no_warnings': True}
+    ydl_opts = {
+        'quiet': True, 
+        'no_warnings': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web']
+            }
+        }
+    }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -92,7 +112,7 @@ def get_post(req: LinkRequest):
     url = req.url.strip()
     platform = detect_platform(url)
     try:
-        result = subprocess.run(["gallery-dl", "--get-urls", url], capture_output=True, text=True, timeout=25)
+        result = subprocess.run(["gallery-dl", "--get-urls", url], capture_query=True, capture_output=True, text=True, timeout=25)
         urls = [line.strip() for line in result.stdout.splitlines() if line.strip().startswith("http")]
         if not urls:
             raise Exception("Is link par koi post nahi mili.")
